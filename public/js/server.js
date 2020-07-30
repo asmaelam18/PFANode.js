@@ -11,7 +11,6 @@ const FriendShipShcema = require('../db/FriendShip')
 const mongoose = require('mongoose')
 
 
-
 const {check, validationResult} = require('express-validator');
 const flash = require('connect-flash')
 const session = require('express-session');
@@ -123,7 +122,8 @@ app.post('/register', [check('email', 'email is empty').notEmpty(),
 
                 
                 res.redirect('/login');
-                    }
+                
+                }
                 
                 
                 })
@@ -204,6 +204,7 @@ app.post('/login',[ check('loginemail', 'email is required').notEmpty(),
 
                                 //loginstateChanged = true;
                                 res.render('contact.ejs');
+                                friends = [];
                            }
                            else {
                                req.flash('incorrectPassword', 'incorrect password');
@@ -312,20 +313,19 @@ io.on('connection', socket => {
 
     socket.emit('user', user);
 
-        socket.emit('friends', friends);
-        console.log(friends)
+    socket.emit('friends', friends);
 
     socket.on('newMessage', async messagesent => {
 
         let messageSchema = new MessageSchema({
             message : messagesent.message,
+            date : new Date(),
             sender : messagesent.sender.id,
             reciever : messagesent.receiver.id
             
         });
 
         console.log(messageSchema);
-
 
 
         await messageSchema.save((error) => {
@@ -336,6 +336,8 @@ io.on('connection', socket => {
                                 .exec((error, messages)=> {
                                     
                                 })
+
+                    socket.broadcast.emit('message', messagesent);
                 }
         })
         
@@ -360,16 +362,31 @@ io.on('connection', socket => {
 
         let user1 = data.user1;
         let user2 = data.user2;
-
-        console.log(user1)
-        console.log(user2);
-
+        let msgs = [];
+        
         await MessageSchema.find({sender : user1.id, reciever : user2.id} , (err, messages) => {
            if(err)
                 console.log(err);
             else
-                socket.emit('messagessent', messages);
-        })
+                messages.forEach(message => {
+                    let msg = {message : message.message , date : message.date, sent : true, rcv : false}
+                    msgs.push(msg);
+                })
+
+        });
+
+        await MessageSchema.find({sender : user2.id, reciever: user1.id}, (err, messagesRcv) => {
+
+            if(err)
+                console.log(err)
+            else 
+                messagesRcv.forEach(message => {
+                    let msg = {message : message.message , date : message.date, sent : false, rcv : true}
+                    msgs.push(msg);
+                })
+        });
+
+        socket.emit('msgs', msgs);
 
     })
 

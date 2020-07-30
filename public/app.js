@@ -8,6 +8,7 @@ let newMessage;
 
 let newUser;
 let newReceiver = {};
+let receiver;
 
 form.addEventListener('submit', processForm);
 
@@ -51,6 +52,7 @@ socket.on('user', use => {
 
 socket.on('friends', friends => {
 
+
     friends.forEach(friend => {
     let contactlink = document.createElement('a')
     contactlink.className = 'contactlink';
@@ -62,9 +64,10 @@ socket.on('friends', friends => {
     newUser = friend[0];
     h1.innerHTML = newUser.username;
     contactlink.addEventListener('click', () => {
+        
         socket.emit('usernametoget', h1.innerHTML);
         socket.emit('getmessages', {user1 : user, user2 : newReceiver});
-
+        
     })
 
    
@@ -78,7 +81,7 @@ socket.on('friends', friends => {
     });
 
     
-    });
+});
     
 
 socket.on('receiver', receiver => {
@@ -86,27 +89,63 @@ socket.on('receiver', receiver => {
     newReceiver.email = receiver.email;
     newReceiver.username = receiver.username;
     newReceiver.password = receiver.password;
-
 });
 
-socket.on('messagessent', messagess => {
 
-    console.log(messagess)
+socket.on('message', message => {
+    console.log('message recieved')
 
-    messagess.forEach(message => {
+    console.log(message.receiver)
+    console.log(user)
+    if(message.receiver.username == user.username){
+        console.log('in');
+        appendIntoMessages(message);
+    }
+        
+})
+
+
+socket.on('msgs', msgs => {
+
+    refreshMessages();
+
+    msgs.sort((a,b) => new Date(a.date) - new Date(b.date));
+    msgs.forEach(message => {
         let div = document.createElement('div');
-
+        
         let p = document.createElement('p');
-
-        div.className = 'message '+ message_send;
-
+        if(message.sent === false && message.rcv === true)
+            div.className = 'message '+ message_rcv;
+        else if(message.sent === true && message.rcv === false)
+            div.className = 'message '+ message_send;
+        
+    
         p.innerHTML = message.message;
 
         div.append(p);
         messages.append(div)
-    
-    });
+    })
 
-
+    console.log(msgs);
 })
+
+function refreshMessages(){
+    messages.innerHTML = '';
+}
+
+function appendIntoMessages(message){
+    let div = document.createElement('div');
+        
+        let p = document.createElement('p');
+        
+        div.className = 'message '+ message_rcv;
+        
+
+    
+        p.innerHTML = message.message;
+
+
+        div.append(p);
+        messages.append(div)
+}
 

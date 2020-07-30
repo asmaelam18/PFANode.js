@@ -6,9 +6,9 @@ const Shcema = mongoose.Schema;
 const messageShcema = new Shcema({
 
     message : String,
+    date : Date,
     sender : {type : Shcema.Types.ObjectId, ref : 'ContactSchema'},
     reciever : {type : Shcema.Types.ObjectId , ref : 'ContactSchema'}
-
 
 })
 
