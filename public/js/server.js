@@ -39,6 +39,11 @@ let user = new Contact();
 let userSchema;
 let friends = [];
 let addedFriend;
+let userstatus;
+let status_connected = "status-connected";
+let status_disconnected = "status-disconnected";
+let currentConnections = [];
+
 
 
 mongoose.connect('mongodb://localhost:27017/test',{useNewUrlParser : true, useUnifiedTopology : true} )
@@ -305,7 +310,15 @@ io.on('connection', socket => {
     socket.emit('user', user);
 
     socket.emit('friends', friends);
-    
+
+    userstatus = {username : user.username, status : status_connected}
+
+    socket.broadcast.emit('userstatus', userstatus);
+
+    currentConnections.push({username : user.username, status : status_connected});
+
+    socket.broadcast.emit('currentConnections', currentConnections);
+
     socket.on('newMessage', async messagesent => {
 
         let messageSchema = new MessageSchema({
@@ -381,8 +394,11 @@ io.on('connection', socket => {
 
     })
 
-
-
+    
+    socket.on('disconnect', () => {
+        userstatus.status = status_disconnected;
+        socket.broadcast.emit('user disconnected', userstatus);
+    })
 
 })
 

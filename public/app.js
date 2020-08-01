@@ -99,12 +99,52 @@ socket.on('message', message => {
     console.log(message.receiver)
     console.log(user)
     if(message.receiver.username == user.username){
-        console.log('in');
         appendIntoMessages(message);
     }
         
 })
 
+socket.on('userstatus', userstatus => {
+
+    let children = contacts.childNodes;
+    let array = [...children];
+    let divcontacts;
+
+    array.forEach(element => {
+        
+        if(element.className === 'contactlink'){
+            if(element.innerText === userstatus.username){
+                let divstatus = element.querySelector('.status')
+                divstatus.className = 'status '+userstatus.status;
+                console.log(divstatus);
+            }
+        }
+    })  
+
+
+
+})
+
+socket.on('user disconnected', userstatus => {
+
+    let children = contacts.childNodes;
+    let array = [...children];
+    let divcontacts;
+
+    array.forEach(element => {
+        
+        if(element.className === 'contactlink'){
+            if(element.innerText === userstatus.username){
+                let divstatus = element.querySelector('.status')
+                divstatus.className = 'status '+userstatus.status;
+                console.log(divstatus);
+            }
+        }
+    })  
+
+
+
+})
 
 
 socket.on('msgs', msgs => {
@@ -128,7 +168,6 @@ socket.on('msgs', msgs => {
         messages.append(div)
     })
 
-    console.log(msgs);
 })
 
 function refreshMessages(){
