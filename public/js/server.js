@@ -317,7 +317,10 @@ io.on('connection', socket => {
 
     currentConnections.push({username : user.username, status : status_connected});
 
-    socket.broadcast.emit('currentConnections', currentConnections);
+    socket.emit('currentConnections', currentConnections);
+
+    //socket.emit('currentConnections', currentConnections);
+
 
     socket.on('newMessage', async messagesent => {
 
@@ -398,6 +401,9 @@ io.on('connection', socket => {
     socket.on('disconnect', () => {
         userstatus.status = status_disconnected;
         socket.broadcast.emit('user disconnected', userstatus);
+
+        let index = currentConnections.map(item => {return item.username}).indexOf(user.username);
+        currentConnections.splice(index,1);
     })
 
 })
@@ -414,7 +420,6 @@ async function getFriends(user){
        });
 
     });
-
 }
 
 

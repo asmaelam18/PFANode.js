@@ -142,9 +142,9 @@ socket.on('user disconnected', userstatus => {
         }
     })  
 
-
-
 })
+
+
 
 
 socket.on('msgs', msgs => {
@@ -168,6 +168,32 @@ socket.on('msgs', msgs => {
         messages.append(div)
     })
 
+})
+
+
+
+socket.on('currentConnections', currentConnections => {
+    let children = contacts.childNodes;
+    let array = [...children];
+    let divcontacts;
+
+    array.forEach(element => {
+        if(element.className === 'contactlink'){
+
+            currentConnections.forEach(connection => {
+                
+                    if(element.innerText === connection.username){
+                        let divstatus = element.querySelector('.status')
+                        divstatus.className = 'status '+connection.status;
+                        console.log(divstatus);
+                    }
+
+            })
+        }
+
+       
+        
+    })  
 })
 
 function refreshMessages(){
