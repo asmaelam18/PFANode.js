@@ -10,6 +10,7 @@ let newUser;
 let newReceiver = {};
 let receiver;
 
+
 form.addEventListener('submit', processForm);
 
 let message_send = "message-send";
@@ -72,7 +73,7 @@ socket.on('friends', friends => {
 
    
     let statusdiv = document.createElement('div');
-    statusdiv.className = 'status ' + status_connected;
+    statusdiv.className = 'status ' + status_disconnected;
 
     div.append(h1);
     div.append(statusdiv);    
@@ -103,6 +104,7 @@ socket.on('message', message => {
     }
         
 })
+
 
 
 socket.on('msgs', msgs => {
@@ -148,4 +150,6 @@ function appendIntoMessages(message){
         div.append(p);
         messages.append(div)
 }
+
+
 

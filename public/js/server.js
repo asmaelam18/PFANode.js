@@ -38,6 +38,7 @@ app.use((req, res, next) => {
 let user = new Contact(); 
 let userSchema;
 let friends = [];
+let addedFriend;
 
 
 mongoose.connect('mongodb://localhost:27017/test',{useNewUrlParser : true, useUnifiedTopology : true} )
@@ -153,7 +154,9 @@ app.get('/login',  (req, res) => {
 
     if(req.session && req.session.user){
         user = req.session.user;
+        getFriends(user);
         res.render('contact.ejs');
+        friends = [];
     }
     else {
         
@@ -191,18 +194,8 @@ app.post('/login',[ check('loginemail', 'email is required').notEmpty(),
                                 user.password = localuser.password;
                                 req.session.user = user;
 
-                                await FriendShipShcema.find({firstContact : user.id},  (err, users) => {
-                                    users.forEach(async (user) => {
-                                       await ContactSchema.find({ _id: user.secondContact }, (err, user) => {
-                                           friends.push(user);
-                                       });
+                                getFriends(user);
 
-                                   });
-    
-    
-                               })
-
-                                //loginstateChanged = true;
                                 res.render('contact.ejs');
                                 friends = [];
                            }
@@ -212,11 +205,6 @@ app.post('/login',[ check('loginemail', 'email is required').notEmpty(),
                            }
                             
                            
-
-
-
-
-
                         }
                         else {
                             req.flash('userNotFound', 'no user with this email found');
@@ -278,6 +266,8 @@ app.post('/addFriend', check('addusername', 'username is required').notEmpty(), 
                 
         
                     await freindshipShcema.save()
+
+                    addedFriend = userFriend;
         
                     res.redirect('/login')
                 }
@@ -311,10 +301,11 @@ app.get('/logout', (req,res) => {
 
 io.on('connection', socket => {
 
+    console.log('connected succesfully ... ')
     socket.emit('user', user);
 
     socket.emit('friends', friends);
-
+    
     socket.on('newMessage', async messagesent => {
 
         let messageSchema = new MessageSchema({
@@ -394,6 +385,21 @@ io.on('connection', socket => {
 
 
 })
+
+
+async function getFriends(user){
+
+    await FriendShipShcema.find({firstContact : user.id},  (err, users) => {
+        users.forEach(async (user) => {
+           await ContactSchema.find({ _id: user.secondContact }, (err, user) => {
+               friends.push(user);
+           });
+
+       });
+
+    });
+
+}
 
 
 server.listen(3000)
